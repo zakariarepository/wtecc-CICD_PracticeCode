@@ -1,6 +1,36 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:  
-  name: <place-name-here>
+  name: cd-pipeline
 spec:
+  params:
+    - name: repo-url
+    - name: branch
+      default: "master"
   tasks:
+    - name: clone
+      taskRef:
+        name: checkout
+      params:
+      - name: repo-url
+        value: "$(params.repo-url)"
+      - name: branch
+        value: "$(params.branch)"
+
+    - name: lint
+      taskRef:
+        name: echo
+      params:
+      - name: message
+        value: "Calling Flake8 linter..."
+      runAfter:
+        - clone
+
+    - name: tests
+      taskRef:
+        name: echo
+      params:
+      - name: message
+        value: "Running unit tests with PyUnit..."
+      runAfter:
+        - lint
